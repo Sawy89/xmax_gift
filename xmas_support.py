@@ -19,14 +19,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import COMMASPACE, formatdate
 
-# Read mail pass
-df_conf = pd.read_csv('xmas_conf.csv', sep=';', header=None)
-MAIL_INVIO = df_conf.loc[df_conf[0]=='mail_invio',1].iloc[0]
-MAIL_PASS = df_conf.loc[df_conf[0]=='mail_pass',1].iloc[0]
 
-
-
-
+# %% Support function
 
 def importFile():
     '''
@@ -38,9 +32,9 @@ def importFile():
     friends he/she doesn't want to make a gift
     
     Excel file should contain:
-        - "Chi" column with the name of the actor who want to do a gift
-        - "Mail" column with the mail to send the extraction
-        - "Esclusioni" column with the list of name (exact name) of people to
+        - "who_give" column with the name of the actor who want to do a gift
+        - "mail" column with the mail to send the extraction
+        - "exclusion" column with the list of name (exact name) of people to
            be excluded from the extraction for the actor separated by comma
     '''
     # Select file
@@ -49,66 +43,77 @@ def importFile():
     
     # Read file
     df = pd.read_excel(filename)
-    df.loc[pd.isnull(df['Esclusioni']), 'Esclusioni'] = ''
-    df['Esclusioni'] = df['Esclusioni'].apply(lambda x: x.replace(' ','').split(',') if len(x)>0 else [])
+    df.loc[pd.isnull(df['exclusion']), 'exclusion'] = ''
+    df['exclusion'] = df['exclusion'].apply(lambda x: x.replace(' ','').split(',') if len(x)>0 else [])
     
     # index come colonna
     df.reset_index(inplace=True)  
     
-    # Esclusioni
-    df['index_ex'] = df['index'].apply(lambda x: [x])  # escludo se stesso
-    for id_persona in df.index:
-        # Per ogni persona, ciclo sulle esclusioni (se ci sono)
-        if len(df.loc[id_persona, 'Esclusioni']) > 0:
-            for nome_ex in df.loc[id_persona, 'Esclusioni']:
-                # cerco l'esclusione per trasformarla in index
-                tmp = df.loc[df['Chi']==nome_ex,'index']
+    # exclusion
+    df['index_ex'] = df['index'].apply(lambda x: [x])   # exclude the same person!
+    for id_person in df.index:
+        # For every person, cycle on exclusion if present
+        if len(df.loc[id_person, 'exclusion']) > 0:
+            for exc_name in df.loc[id_person, 'exclusion']:
+                # find exclusion id from name
+                tmp = df.loc[df['who_give']==exc_name,'index']
                 if len(tmp) == 1:
                     # esclusione trovata!
-                    df.loc[id_persona, 'index_ex'].append(tmp.iloc[0])
+                    df.loc[id_person, 'index_ex'].append(tmp.iloc[0])
                 else:
-                    # Erorre!
-                    print(df.loc[df['Chi']==nome_ex])
-                    raise Exception('Esclusione ('+nome_ex+') di '+df.loc[id_persona, 'Chi']+' non trovata o trovate più di una!!')
+                    # Error!
+                    print(df.loc[df['who_give']==exc_name])
+                    raise Exception('Exclusion ('+exc_name+') di '+df.loc[id_person, 'who_give']+' not found or too many found!! Verify the imported file!')
     
     return df
 
 
-def checkExtraction(chi_fa, chi_riceve, esclusioni):
+def checkExtraction(who_give, who_receive, exclusion):
     '''
-    Funzione che verifica se l'estrazione è stata effettuata correttamente!
+    Function for veryfing if the result of the extraction is correct!
     INPUT:
-        - il chi_fa è una stringa con il nome di chi effettua il regalo
-        - il chi_riceve è una stringa con il nome di chi riceve il regalo
-        - esclusioni è una lista contenente i nomi di chi non possono ricevere il regalo dal regalante
+        who_give = string with the name of the person who give the gift
+        who_receive = string with the name of the person who receive the gift
+        exclusion = list of strings of names of person who can't be "who_receive"
     '''
-    # tutto minuscolo, per evitare errori
-    chi_fa = chi_fa.lower()
-    chi_riceve = chi_riceve.lower()
-    esclusioni = [i.lower() for i in esclusioni]
+    # Lower case (to avoid error)
+    who_give = who_give.lower()
+    who_receive = who_receive.lower()
+    exclusion = [i.lower() for i in exclusion]
     
-    # verifico
-    assert chi_fa != chi_riceve
-    assert chi_riceve not in esclusioni
+    # Verify
+    assert who_give != who_receive
+    assert who_receive not in exclusion
 
+
+
+
+
+# %% Mail
+
+# Read mail pass
+df_conf = pd.read_csv('xmas_conf.csv', sep=';', header=None)
+MAIL_INVIO = df_conf.loc[df_conf[0]=='mail_invio',1].iloc[0]
+MAIL_PASS = df_conf.loc[df_conf[0]=='mail_pass',1].iloc[0]
 
 
 def sendMail(send_to, subject, text, files=None, server="smtp.gmail.com", mailType=None,
                   send_to_cc=None, send_to_bcc=None):
     '''
-    funzione per inviare MAIL
-    INPUT: send_to come lista delle mail dei ricevitori
-           subject = oggetto, text = corpo della mail
-           files come lista degli allegati (se presente)
-           mailType = indica se in formato testo (default) o 'HTML'
-           send_to_cc e send_to_bcc sono liste con gli indirizzi mail da inserire
-               (se presenti) in CC e BCC (copia nascosta)           
+    function for sending mail
+    INPUT: send_to = list of all receivers mail
+           subject = subject of the mail 
+           text = body of the mail
+           files = list of path+name of all attached files
+           mailType = 'text' (DEFAULT) of 'HTML' mail format
+           send_to_cc = list of all CC mail (copia)
+           send_to_bcc = list of all BCC mail (copia nascosta)
     '''
    
     assert isinstance(send_to, list)
-    send_to_all = send_to.copy() # copia per evitare di modificare la lista globale
+    send_to_all = send_to.copy()        # copy to avoid modification on global list
         
-    # Info mail (quelle mostrate nell'header)
+    # Info mail (shown in the header)
     msg = MIMEMultipart()
     msg['From'] = MAIL_INVIO
     msg['To'] = COMMASPACE.join(send_to)
@@ -119,21 +124,21 @@ def sendMail(send_to, subject, text, files=None, server="smtp.gmail.com", mailTy
     if send_to_cc != None:
         assert isinstance(send_to_cc, list)
         msg['Cc'] = COMMASPACE.join(send_to_cc) # header della mail
-        send_to_all += send_to_cc # a chi la invia
+        send_to_all += send_to_cc           # send to
     
-    # Add BCC (nascosto) --> solo nella lista degli invii!
+    # Add BCC (nascosto) --> only in the list of sending (not showing)
     if send_to_bcc != None:
         assert isinstance(send_to_bcc, list)
-        send_to_all += send_to_bcc # a chi la invia
+        send_to_all += send_to_bcc          # send to
     
-    # Differenze per tipo mail
+    # Different mail type (HTML or text DEFAULT)
     if mailType=='HTML':
         text = text.replace('\n\n','<br><br>')
         msg.attach(MIMEText(text,'HTML'))
     else:
         msg.attach(MIMEText(text))
 
-    # Allegati
+    # Attached documents
     for f in files or []:
         with open(f, "rb") as fil:
             part = MIMEApplication(
@@ -151,7 +156,3 @@ def sendMail(send_to, subject, text, files=None, server="smtp.gmail.com", mailTy
     smtp.sendmail(MAIL_INVIO, send_to_all, msg.as_string())
     smtp.quit()
 
-
-
-if __name__ == '__main__':
-    df = importFile()
