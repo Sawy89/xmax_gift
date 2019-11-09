@@ -1,0 +1,8 @@
+# Folder
+__pycache__/
+_old/
+
+# File
+*.csv
+*.db
+*.xlsx
