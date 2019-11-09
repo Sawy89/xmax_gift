@@ -9,9 +9,16 @@ So we decided to make an extraction: everyone has to make a gift to a specific r
 and in order to respect some constraint (relative don't want to extract their sister, or husband, ...)
 Why not to do it in Python?
 
+We are Italian, so the mail text, and some specification are in italian :wink:
+
+
+
+
+
 
 ## Tutorial
 How to setup the program, and which file are needed.
+
 
 
 #### Mail
@@ -22,6 +29,8 @@ the file will be like this:
 mail;mymail@gmail.com
 pass;mypassword
 ```
+
+
 
 #### List of partecipant
 An excel file with the list of partecipant should be prepared; the filename is not important, because you will manually select the file with UI.
@@ -35,8 +44,9 @@ Stefy	    mail3@gmail.com	    Alex, Marta, Paolo
 ```
 
 
+
 #### Go!
 Launch the program, and every partecipant will receive a mail with the name of the extracted person to which he needs to prepare and give a present!
 The sender mail will also receive a summary of the extraction, that will also be saved in excel file in the folder!
 
-Happy Christmas
+Happy Christmas!
