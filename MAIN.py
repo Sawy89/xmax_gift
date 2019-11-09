@@ -10,7 +10,6 @@ from xmas_perm import xmas_perm
 from xmas_support import importFile, checkExtraction, sendMail
 import os
 
-master_mail = ['l.scotto.es@gmail.com']
 
 # %% Import file
 print("Select and import file with participant list and data")
@@ -56,4 +55,4 @@ for id_who_give in df.index:
 print('Save result in excel file (backup) and send to master')
 res_name = 'XmasGift_result.xlsx'
 df.to_excel(res_name)
-sendMail(master_mail, 'Risultati regalo natale', df.to_html(), mailType='HTML', files=[os.getcwd()+'\\'+res_name])
+sendMail(None, 'Risultati regalo natale', df.to_html(), mailType='HTML', files=[os.getcwd()+'\\'+res_name])

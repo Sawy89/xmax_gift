@@ -93,8 +93,8 @@ def checkExtraction(who_give, who_receive, exclusion):
 
 # Read mail pass
 df_conf = pd.read_csv('xmas_conf.csv', sep=';', header=None)
-MAIL_INVIO = df_conf.loc[df_conf[0]=='mail_invio',1].iloc[0]
-MAIL_PASS = df_conf.loc[df_conf[0]=='mail_pass',1].iloc[0]
+MAIL_INVIO = df_conf.loc[df_conf[0]=='mail',1].iloc[0]
+MAIL_PASS = df_conf.loc[df_conf[0]=='pass',1].iloc[0]
 
 
 def sendMail(send_to, subject, text, files=None, server="smtp.gmail.com", mailType=None,
@@ -109,7 +109,10 @@ def sendMail(send_to, subject, text, files=None, server="smtp.gmail.com", mailTy
            send_to_cc = list of all CC mail (copia)
            send_to_bcc = list of all BCC mail (copia nascosta)
     '''
-   
+    # if no to is specified, the mail is sento the the sending mail!
+    if send_to == None:
+        send_to = MAIL_INVIO
+        
     assert isinstance(send_to, list)
     send_to_all = send_to.copy()        # copy to avoid modification on global list
         
