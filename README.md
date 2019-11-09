@@ -13,6 +13,12 @@ We are Italian, so the mail text, and some specification are in italian :wink:
 
 
 
+## Dependencies:
+Python library to be installed:
+- openpyxl
+- xlrd
+- pandas
+
 
 
 
