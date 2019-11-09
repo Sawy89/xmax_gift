@@ -18,7 +18,7 @@ df = importFile()
 
 # %% Permutation
 print("Permutation")
-d = xmas_perm(df['index_ex'].values, df.shape[0])
+d = xmas_perm(df['index_ex'].values)
 
 
 # %% Convert and check

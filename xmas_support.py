@@ -111,7 +111,7 @@ def sendMail(send_to, subject, text, files=None, server="smtp.gmail.com", mailTy
     '''
     # if no to is specified, the mail is sento the the sending mail!
     if send_to == None:
-        send_to = MAIL_INVIO
+        send_to = [MAIL_INVIO]
         
     assert isinstance(send_to, list)
     send_to_all = send_to.copy()        # copy to avoid modification on global list

@@ -8,7 +8,6 @@ Functions for performing the random extraction!
 @author: elena
 """
 import random
-from permutation import toname # to invert the number to the associated name
 
 
 # %% Function
@@ -61,18 +60,4 @@ if __name__ == '__main__':
     # permuted list
     D = xmas_perm(J)
     
-    # Now we check with the names (toname) if there are some wrong exclusions
-    
-    # Creo coppi nomi MITTENTE-DESTINATARIO
-    # lista dei Mittenti
-    M = list(range(17))
-    M = toname(M)
-    D = toname(D)
-    
-    # stampo le coppie
-    print('(Mittente , Destinatario)\n')
-    t = [(M[i]+ ' fa il regalo a ' + D[i]) for i in range(17)]     
-    print(t)
-  
-
 
